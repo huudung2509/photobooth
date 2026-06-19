@@ -32,6 +32,7 @@ function toggleCountdown() {
 
 const FILTERS = [
   { name: 'Mặc định', css: 'none', ar: 'none' },
+  { name: 'Kính Râm Đen', css: 'none', ar: 'sunglasses2' },
   { name: 'Hàn Quốc', css: 'sepia(10%) saturate(150%) hue-rotate(330deg)', ar: 'none' },
   { name: 'Mùa thu', css: 'sepia(40%) saturate(140%) hue-rotate(-10deg)', ar: 'none' },
   { name: 'Tươi tắn', css: 'saturate(200%) contrast(110%)', ar: 'none' },

@@ -81,8 +81,8 @@
       <button class="strip-btn download" onclick="downloadPhotoStrip()">
         📥 Tải ảnh
       </button>
-      <button class="strip-btn gif" onclick="downloadGIF()" id="downloadGifBtn">
-        🎞️ Tải GIF
+      <button class="strip-btn video" onclick="downloadVideo()" id="downloadVideoBtn">
+        🎥 Tải Video
       </button>
       <button class="strip-btn print" onclick="printPhotoStrip()">
         🖨️ In ảnh
@@ -91,16 +91,12 @@
         🔄 Làm lại
       </button>
     </div>
-    <div id="gifLoadingIndicator" style="display: none; color: white; margin-top: 15px; font-weight: bold; font-family: 'Nunito', sans-serif;">
-      ⏳ Đang tạo GIF... Vui lòng đợi!
-    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
   <script src="script.js"></script>
 
   <!-- Gallery Modal -->

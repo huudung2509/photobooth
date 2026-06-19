@@ -22,9 +22,9 @@ const state = {
   retakeIndex: null
 };
 
-let gifFrames = [];
-let gifCaptureInterval = null;
-let isCapturingGif = false;
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecordingVideo = false;
 
 const COUNTDOWNS = [3, 5, 7, 10];
 
@@ -308,9 +308,15 @@ function startCountdown(captureType = "full") {
   if (state.countdownInterval) return;
   
   if (state.photoCount === 0 && state.retakeIndex === null) {
-    gifFrames = [];
-    isCapturingGif = true;
-    gifCaptureInterval = setInterval(captureGifFrame, 250);
+    // Bắt đầu quay video
+    recordedChunks = [];
+    const stream = canvas.captureStream(30); // 30 FPS
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunks.push(e.data);
+    };
+    mediaRecorder.start();
+    isRecordingVideo = true;
   }
   
   let count = COUNTDOWNS[state.currentCountdownIndex];
@@ -444,10 +450,9 @@ function savePhoto(photoData) {
     updateStatus();
     
     if (state.photoCount >= state.maxPhotos) {
-      isCapturingGif = false;
-      if (gifCaptureInterval) {
-        clearInterval(gifCaptureInterval);
-        gifCaptureInterval = null;
+      if (isRecordingVideo && mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        isRecordingVideo = false;
       }
     }
     
@@ -765,54 +770,21 @@ function downloadPhotoStrip() {
   link.click();
 }
 
-function captureGifFrame() {
-  if (!isCapturingGif) return;
-  if (gifFrames.length >= 40) return; // Cap at 40 frames max
-
-  const tempCanvas = document.createElement("canvas");
-  const scale = 320 / canvas.height;
-  tempCanvas.width = Math.floor(canvas.width * scale);
-  tempCanvas.height = 320;
-  const tempCtx = tempCanvas.getContext("2d");
-  tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
-  gifFrames.push(tempCanvas);
-}
-
-function downloadGIF() {
-  if (gifFrames.length === 0) {
-    alert("Không có dữ liệu ảnh động!");
+function downloadVideo() {
+  if (recordedChunks.length === 0) {
+    alert("Không có dữ liệu video!");
     return;
   }
   
-  const loading = document.getElementById("gifLoadingIndicator");
-  loading.style.display = "block";
-  document.getElementById("downloadGifBtn").disabled = true;
-
-  const gif = new GIF({
-    workers: navigator.hardwareConcurrency || 4,
-    quality: 20,
-    width: gifFrames[0].width,
-    height: gifFrames[0].height,
-    workerScript: 'gif.worker.js'
-  });
-
-  gifFrames.forEach(frame => {
-    gif.addFrame(frame, {delay: 250});
-  });
-
-  gif.on('finished', function(blob) {
-    loading.style.display = "none";
-    document.getElementById("downloadGifBtn").disabled = false;
-    
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `photobooth_boomerang_${new Date().getTime()}.gif`;
-    link.click();
-    URL.revokeObjectURL(url);
-  });
-
-  gif.render();
+  const blob = new Blob(recordedChunks, { type: 'video/webm' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `photobooth_video_${new Date().getTime()}.webm`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 // --- Photo Strip Print ---

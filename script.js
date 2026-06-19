@@ -18,7 +18,8 @@ const state = {
   currentFilterIndex: 0,
   history: [],
   faces: [],
-  currentARFilterIndex: 'none'
+  currentARFilterIndex: 'none',
+  retakeIndex: null
 };
 
 const COUNTDOWNS = [3, 5, 7, 10];
@@ -274,7 +275,7 @@ function updateHandTracking() {
       // Check for "Hi" gesture to capture full screen (1 or 2 hands)
     if (handState1 === "open" || handState2 === "open") {
       state.hiFrames++;
-      if (state.hiFrames > 15 && !state.countdownInterval && state.photoCount < state.maxPhotos) {
+      if (state.hiFrames > 15 && !state.countdownInterval && (state.photoCount < state.maxPhotos || state.retakeIndex !== null)) {
         startCountdown("full");
         state.hiFrames = 0;
       }
@@ -335,7 +336,7 @@ function startCountdown(captureType = "full") {
 }
 
 function captureFullScreenPhoto() {
-  if (state.photoCount >= state.maxPhotos) return;
+  if (state.retakeIndex === null && state.photoCount >= state.maxPhotos) return;
 
   const pixelWidth = video.videoWidth;
   const pixelHeight = video.videoHeight;
@@ -359,22 +360,11 @@ function captureFullScreenPhoto() {
   drawARFilters(tempCtx, pixelWidth, pixelHeight);
 
   const photoData = tempCanvas.toDataURL("image/png");
-  state.photos.push(photoData);
-  state.photoCount++;
-  state.lastPhotoTime = Date.now();
-
-  playShutterSound();
-  createPhotoTakenEffects();
-  addThumbnail(photoData);
-  updateStatus();
-
-  if (state.photoCount === state.maxPhotos) {
-    setTimeout(showPhotoStrip, 1000);
-  }
+  savePhoto(photoData);
 }
 
 function capturePhoto() {
-  if (state.photoCount >= state.maxPhotos || !state.frameBox) return;
+  if ((state.retakeIndex === null && state.photoCount >= state.maxPhotos) || !state.frameBox) return;
 
   const frameBox = state.frameBox;
   const pixelWidth = frameBox.width * video.videoWidth;
@@ -409,17 +399,38 @@ function capturePhoto() {
   tempCtx.drawImage(fullCanvas, screenX, screenY, pixelWidth, pixelHeight, 0, 0, pixelWidth, pixelHeight);
 
   const photoData = tempCanvas.toDataURL("image/png");
-  state.photos.push(photoData);
-  state.photoCount++;
-  state.lastPhotoTime = Date.now();
+  savePhoto(photoData);
+}
 
-  playShutterSound();
-  createPhotoTakenEffects();
-  addThumbnail(photoData);
-  updateStatus();
-
-  if (state.photoCount === state.maxPhotos) {
+function savePhoto(photoData) {
+  if (state.retakeIndex !== null) {
+    state.photos[state.retakeIndex] = photoData;
+    
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar && sidebar.children[state.retakeIndex]) {
+      sidebar.children[state.retakeIndex].src = photoData;
+    }
+    
+    state.retakeIndex = null;
+    state.lastPhotoTime = Date.now();
+    playShutterSound();
+    createPhotoTakenEffects();
+    updateStatus();
+    
     setTimeout(showPhotoStrip, 1000);
+  } else {
+    state.photos.push(photoData);
+    state.photoCount++;
+    state.lastPhotoTime = Date.now();
+    
+    playShutterSound();
+    createPhotoTakenEffects();
+    addThumbnail(photoData);
+    updateStatus();
+    
+    if (state.photoCount === state.maxPhotos) {
+      setTimeout(showPhotoStrip, 1000);
+    }
   }
 }
 
@@ -462,7 +473,7 @@ function updateStatus() {
   countEl.textContent = `📸 ${state.photoCount}/${state.maxPhotos}`;
   statusEl.style.background = "rgba(255, 100, 200, 0.9)";
 
-  if (state.photoCount === state.maxPhotos) {
+  if (state.retakeIndex === null && state.photoCount === state.maxPhotos) {
     statusEl.style.display = "block";
     statusEl.textContent = "✨ Đã hoàn thành!";
   } else if (state.countdownInterval) {
@@ -557,6 +568,33 @@ function showPhotoStrip() {
       };
       img.src = photoData;
     });
+
+    stripCanvas.style.cursor = "pointer";
+    stripCanvas.title = "Bấm vào ảnh để chụp lại";
+    stripCanvas.onclick = (e) => {
+      const rect = stripCanvas.getBoundingClientRect();
+      const scaleX = stripCanvas.width / rect.width;
+      const scaleY = stripCanvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      
+      for (let i = 0; i < frameBoxes.length; i++) {
+        const box = frameBoxes[i];
+        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+          if (i < state.photos.length) {
+            if (confirm(`Bạn có muốn chụp lại bức ảnh thứ ${i + 1} không?`)) {
+              state.retakeIndex = i;
+              document.getElementById("photoStripModal").style.display = "none";
+              const statusEl = document.getElementById("statusText");
+              statusEl.style.display = "block";
+              statusEl.textContent = `📸 Đang chụp lại ảnh ${i + 1}... Giơ tay (L hoặc Hi) để chụp!`;
+              statusEl.style.background = "rgba(255, 150, 50, 0.9)";
+            }
+          }
+          break;
+        }
+      }
+    };
 
     document.getElementById("photoStripModal").style.display = "flex";
     return;

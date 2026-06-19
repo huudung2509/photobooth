@@ -1086,13 +1086,19 @@ function drawARFilters(ctx, w, h) {
       ctx.stroke();
     } 
     else if (state.currentARFilterIndex === 'thug') {
-      const glassesWidth = faceWidth * 1.2;
-      ctx.translate(nose.x, leftEye.y);
-      ctx.rotate(angle);
-      ctx.font = `${glassesWidth}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("🕶️", 0, 0);
+      const img = document.getElementById('sunglassesImg');
+      if (img && img.complete && img.naturalWidth > 0) {
+        const cx = (leftEye.x + rightEye.x) / 2;
+        const cy = (leftEye.y + rightEye.y) / 2;
+        
+        const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
+        const glassesWidth = eyeDist * 2.5;
+        const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);
+        
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.drawImage(img, -glassesWidth / 2, -glassesHeight / 2, glassesWidth, glassesHeight);
+      }
     }
     else if (state.currentARFilterIndex === 'crown') {
       const crownSize = faceWidth * 0.8;

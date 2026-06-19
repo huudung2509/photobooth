@@ -5,8 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Photobooth của Jang💖</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Pacifico&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Pacifico&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -16,78 +15,57 @@
     <canvas id="mainCanvas"></canvas>
   </div>
 
-  <!-- Restored Instructions Panel -->
-  <div id="instructionsPanel">
+  <!-- Instructions Panel -->
+  <div id="instructionsPanel" class="glass-panel">
     <h3>✨ Photobooth của Jang💖</h3>
-    <div id="tips">
-      <p>🖐️ Giơ 1 tay (Hi) → Chụp toàn màn hình (3s)</p>
-      <p>🙌 Giơ 2 tay "L" → Tạo khung ảnh</p>
-      <p>👆 Gập ngón trỏ → Chụp trong khung</p>
+    <div id="tips" class="desktop-tips">
+      <p>🖐️ Giơ tay (Hi) → Chụp tự động (3s)</p>
+      <p>🙌 Giơ 2 tay "L" → Bật/tắt khung</p>
+      <p>👆 Gập ngón trỏ → Chụp thủ công</p>
+    </div>
+    <div id="tips" class="mobile-tips">
+      <p>🖐️ Giơ tay Hi để chụp | 🙌 Giơ 2 tay L để tạo khung | 👆 Gập trỏ để chụp</p>
     </div>
   </div>
 
-  <div id="countdownText"
-    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 150px; color: white; text-shadow: 0 0 30px #ff66cc, 0 0 10px #ff66cc; font-weight: 900; z-index: 100; font-family: 'Nunito', sans-serif;">
-    3</div>
+  <div id="countdownText">3</div>
 
-  <div id="statusText">Initializing...</div>
-  <div id="photoCount" style="display: none">📸 0/4</div>
+  <div id="statusText" class="glass-panel">Đang khởi động Camera...</div>
+  <div id="photoCount" class="glass-panel" style="display: none">📸 0/4</div>
 
   <div id="sidebar"></div>
-  <!-- Using local frame images -->
-  <div id="frameSelector" style="position: fixed; top: 20px; right: 150px; z-index: 110; display: flex; gap: 10px;">
-    <button onclick="openGallery()"
-      style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #9966ff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;"
-      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+  
+  <!-- Top Controls -->
+  <div class="top-controls">
+    <button onclick="openGallery()" class="control-btn">
       📸 Thư viện
     </button>
-    <button id="countdownBtn" onclick="toggleCountdown()"
-      style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff6666; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;"
-      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+    <button id="countdownBtn" onclick="toggleCountdown()" class="control-btn">
       ⏱️ 3s
     </button>
-    <div style="position: relative; display: inline-block;"
-      onmouseenter="document.getElementById('filterDropdown').style.display='flex'"
-      onmouseleave="document.getElementById('filterDropdown').style.display='none'">
-      <button
-        style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff9933; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;">
-        ✨ Đổi Filter ▾
+    <div class="dropdown-container">
+      <button class="control-btn">
+        ✨ Filter ▾
       </button>
-      <div id="filterDropdown"
-        style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); flex-direction: column; gap: 5px; min-width: 150px; z-index: 100;">
-        <!-- Filters will be loaded here via JS -->
+      <div id="filterDropdown" class="dropdown-menu glass-panel">
+        <!-- Filters loaded via JS -->
       </div>
     </div>
-    <div style="position: relative; display: inline-block;"
-      onmouseenter="document.getElementById('frameDropdown').style.display='flex'"
-      onmouseleave="document.getElementById('frameDropdown').style.display='none'">
-      <button
-        style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff66cc; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px;">
-        🖼️ Chọn khung ▾
+    <div class="dropdown-container">
+      <button class="control-btn">
+        🖼️ Khung ▾
       </button>
-      <div id="frameDropdown"
-        style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
-        <img src="frame.jpg" class="frame-thumb"
-          onclick="selectFrame('frame.jpg', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid #ff66cc; border-radius: 5px; transition: transform 0.2s;">
-        <img src="frame2.jpg" class="frame-thumb"
-          onclick="selectFrame('frame2.jpg', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s;">
-        <img src="frame3.jpg" class="frame-thumb"
-          onclick="selectFrame('frame3.jpg', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s;">
-        <img src="frame4.png" class="frame-thumb"
-          onclick="selectFrame('frame4.png', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s; background: white;">
-        <img src="frame5.png" class="frame-thumb"
-          onclick="selectFrame('frame5.png', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s; background: white;">
-        <img src="frame6.png" class="frame-thumb"
-          onclick="selectFrame('frame6.png', this); document.getElementById('frameDropdown').style.display='none';"
-          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s; background: white;">
+      <div id="frameDropdown" class="dropdown-menu glass-panel">
+        <img src="frame.jpg" class="frame-thumb selected" onclick="selectFrame('frame.jpg', this)">
+        <img src="frame2.jpg" class="frame-thumb" onclick="selectFrame('frame2.jpg', this)">
+        <img src="frame3.jpg" class="frame-thumb" onclick="selectFrame('frame3.jpg', this)">
+        <img src="frame4.png" class="frame-thumb" onclick="selectFrame('frame4.png', this)">
+        <img src="frame5.png" class="frame-thumb" onclick="selectFrame('frame5.png', this)">
+        <img src="frame6.png" class="frame-thumb" onclick="selectFrame('frame6.png', this)">
       </div>
     </div>
   </div>
+
   <img id="customFrame" src="frame.jpg" style="display:none;" onload="onFrameLoad()" crossorigin="anonymous" />
   <img id="sunglassesImg" src="sunglasses.png" style="display:none;" crossorigin="anonymous" />
   <img id="sunglasses2Img" src="sunglasses2.png" style="display:none;" crossorigin="anonymous" />
@@ -99,6 +77,9 @@
     <div id="stripButtonGroup">
       <button class="strip-btn download" onclick="downloadPhotoStrip()">
         📥 Tải xuống
+      </button>
+      <button class="strip-btn print" onclick="printPhotoStrip()">
+        🖨️ In ảnh
       </button>
       <button class="strip-btn reset" onclick="resetPhotobooth()">
         🔄 Làm lại
@@ -113,23 +94,16 @@
   <script src="script.js"></script>
 
   <!-- Gallery Modal -->
-  <div id="galleryModal"
-    style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div
-      style="background: white; padding: 20px; border-radius: 20px; width: 80%; height: 80%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-      <div
-        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-        <h2 style="font-family: 'Nunito', sans-serif; color: #ff66cc; margin: 0;">📸 Thư viện ảnh của bạn</h2>
-        <button onclick="closeGallery()"
-          style="background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; transition: transform 0.2s;"
-          onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖</button>
+  <div id="galleryModal">
+    <div class="gallery-content">
+      <div class="gallery-header">
+        <h2>📸 Thư viện ảnh của bạn</h2>
+        <button onclick="closeGallery()" class="gallery-close">✖</button>
       </div>
-      <div id="galleryContainer"
-        style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 10px;">
+      <div id="galleryContainer">
         <!-- Images will be injected here -->
       </div>
     </div>
   </div>
 </body>
-
 </html>

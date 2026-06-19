@@ -729,12 +729,48 @@ function showPhotoStrip() {
   document.getElementById("photoStripModal").style.display = "flex";
 }
 
+// --- Photo Strip Download ---
 function downloadPhotoStrip() {
-  const stripCanvas = document.getElementById("photoStripCanvas");
+  const canvas = document.getElementById("photoStripCanvas");
   const link = document.createElement("a");
-  link.href = stripCanvas.toDataURL("image/png");
-  link.download = `photobooth_${Date.now()}.png`;
+  link.download = `photobooth_${new Date().getTime()}.png`;
+  link.href = canvas.toDataURL("image/png");
   link.click();
+}
+
+// --- Photo Strip Print ---
+function printPhotoStrip() {
+  const canvas = document.getElementById("photoStripCanvas");
+  const dataUrl = canvas.toDataURL("image/png");
+  
+  // Create an iframe to print from
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+  
+  const doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(`
+    <html>
+      <head>
+        <title>Print Photobooth</title>
+        <style>
+          @page { margin: 0; }
+          body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: white; }
+          img { max-width: 100%; max-height: 100vh; object-fit: contain; }
+        </style>
+      </head>
+      <body>
+        <img src="${dataUrl}" onload="window.print(); setTimeout(() => window.parent.document.body.removeChild(window.frameElement), 1000);" />
+      </body>
+    </html>
+  `);
+  doc.close();
 }
 
 function openGallery() {
@@ -1003,8 +1039,8 @@ window.addEventListener("load", () => {
 
 // --- Frame Analysis & Selection ---
 function selectFrame(src, element) {
-  document.querySelectorAll('.frame-thumb').forEach(el => el.style.borderColor = 'transparent');
-  element.style.borderColor = '#ff66cc';
+  document.querySelectorAll('.frame-thumb').forEach(el => el.classList.remove('selected'));
+  if (element) element.classList.add('selected');
   const img = document.getElementById('customFrame');
   img.src = src;
 }

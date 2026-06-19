@@ -310,7 +310,7 @@ function startCountdown(captureType = "full") {
   if (state.photoCount === 0 && state.retakeIndex === null) {
     gifFrames = [];
     isCapturingGif = true;
-    gifCaptureInterval = setInterval(captureGifFrame, 150);
+    gifCaptureInterval = setInterval(captureGifFrame, 250);
   }
   
   let count = COUNTDOWNS[state.currentCountdownIndex];
@@ -767,10 +767,12 @@ function downloadPhotoStrip() {
 
 function captureGifFrame() {
   if (!isCapturingGif) return;
+  if (gifFrames.length >= 40) return; // Cap at 40 frames max
+
   const tempCanvas = document.createElement("canvas");
-  const scale = 480 / canvas.height;
+  const scale = 320 / canvas.height;
   tempCanvas.width = Math.floor(canvas.width * scale);
-  tempCanvas.height = 480;
+  tempCanvas.height = 320;
   const tempCtx = tempCanvas.getContext("2d");
   tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
   gifFrames.push(tempCanvas);
@@ -787,15 +789,15 @@ function downloadGIF() {
   document.getElementById("downloadGifBtn").disabled = true;
 
   const gif = new GIF({
-    workers: 2,
-    quality: 10,
+    workers: navigator.hardwareConcurrency || 4,
+    quality: 20,
     width: gifFrames[0].width,
     height: gifFrames[0].height,
     workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
   });
 
   gifFrames.forEach(frame => {
-    gif.addFrame(frame, {delay: 150});
+    gif.addFrame(frame, {delay: 250});
   });
 
   gif.on('finished', function(blob) {

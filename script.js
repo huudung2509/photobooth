@@ -111,6 +111,8 @@ function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
 }
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
@@ -345,6 +347,8 @@ function captureFullScreenPhoto() {
   tempCanvas.width = pixelWidth;
   tempCanvas.height = pixelHeight;
   const tempCtx = tempCanvas.getContext("2d");
+  tempCtx.imageSmoothingEnabled = true;
+  tempCtx.imageSmoothingQuality = 'high';
 
   tempCtx.save();
   tempCtx.translate(pixelWidth, 0);
@@ -375,6 +379,8 @@ function capturePhoto() {
   fullCanvas.width = video.videoWidth;
   fullCanvas.height = video.videoHeight;
   const fullCtx = fullCanvas.getContext("2d");
+  fullCtx.imageSmoothingEnabled = true;
+  fullCtx.imageSmoothingQuality = 'high';
 
   fullCtx.save();
   fullCtx.translate(video.videoWidth, 0);
@@ -392,6 +398,8 @@ function capturePhoto() {
   tempCanvas.width = pixelWidth;
   tempCanvas.height = pixelHeight;
   const tempCtx = tempCanvas.getContext("2d");
+  tempCtx.imageSmoothingEnabled = true;
+  tempCtx.imageSmoothingQuality = 'high';
 
   const screenX = frameBox.x * video.videoWidth;
   const screenY = frameBox.y * video.videoHeight;
@@ -503,9 +511,11 @@ function showPhotoStrip() {
     const stripHeight = customFrame.naturalHeight;
     stripCanvas.width = stripWidth;
     stripCanvas.height = stripHeight;
+    stripCtx.imageSmoothingEnabled = true;
+    stripCtx.imageSmoothingQuality = 'high';
 
     const src = customFrame.src || customFrame.getAttribute('src') || '';
-    const isTransparentFrame = src.includes('frame4.png') || src.includes('frame5.png') || src.includes('frame6.png');
+    const isTransparentFrame = src.includes('frame4.png') || src.includes('frame5.png') || src.includes('frame6.png') || src.includes('frame7.png') || src.includes('frame8.png') || src.includes('frame9.png');
 
     // Draw the custom frame as background if not transparent
     if (!isTransparentFrame) {
@@ -991,8 +1001,8 @@ async function init() {
           if (faceMesh) await faceMesh.send({ image: video });
         }
       },
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
     });
 
     await camera.start();

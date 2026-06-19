@@ -365,6 +365,11 @@ body {
   background: linear-gradient(135deg, #7928ca, #ff0080);
   box-shadow: 0 10px 20px rgba(121, 40, 202, 0.3);
 }
+.strip-btn.gif {
+  background: linear-gradient(135deg, #FF9A9E, #FECFEF);
+  color: #333;
+  box-shadow: 0 10px 20px rgba(255, 154, 158, 0.3);
+}
 .strip-btn.reset {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -377,6 +382,7 @@ body {
 }
 .strip-btn.download:hover { box-shadow: 0 15px 30px rgba(255, 0, 128, 0.5); }
 .strip-btn.print:hover { box-shadow: 0 15px 30px rgba(121, 40, 202, 0.5); }
+.strip-btn.gif:hover { box-shadow: 0 15px 30px rgba(255, 154, 158, 0.6); transform: translateY(-3px); }
 .strip-btn.reset:hover { background: rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); }
 
 /* Flash effect */

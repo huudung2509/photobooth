@@ -22,6 +22,10 @@ const state = {
   retakeIndex: null
 };
 
+let gifFrames = [];
+let gifCaptureInterval = null;
+let isCapturingGif = false;
+
 const COUNTDOWNS = [3, 5, 7, 10];
 
 function toggleCountdown() {
@@ -303,6 +307,12 @@ function calculateFrameBoundingBox(thumb1, index1, thumb2, index2) {
 function startCountdown(captureType = "full") {
   if (state.countdownInterval) return;
   
+  if (state.photoCount === 0 && state.retakeIndex === null) {
+    gifFrames = [];
+    isCapturingGif = true;
+    gifCaptureInterval = setInterval(captureGifFrame, 150);
+  }
+  
   let count = COUNTDOWNS[state.currentCountdownIndex];
   const countdownEl = document.getElementById("countdownText");
   countdownEl.style.display = "block";
@@ -433,9 +443,19 @@ function savePhoto(photoData) {
     addThumbnail(photoData);
     updateStatus();
     
-    if (state.photoCount === state.maxPhotos) {
-      setTimeout(showPhotoStrip, 1000);
+    if (state.photoCount >= state.maxPhotos) {
+      isCapturingGif = false;
+      if (gifCaptureInterval) {
+        clearInterval(gifCaptureInterval);
+        gifCaptureInterval = null;
+      }
     }
+    
+    setTimeout(() => {
+      if (state.photoCount === state.maxPhotos) {
+        setTimeout(showPhotoStrip, 1000);
+      }
+    }, 1000);
   }
 }
 
@@ -743,6 +763,54 @@ function downloadPhotoStrip() {
   link.download = `photobooth_${new Date().getTime()}.png`;
   link.href = canvas.toDataURL("image/png");
   link.click();
+}
+
+function captureGifFrame() {
+  if (!isCapturingGif) return;
+  const tempCanvas = document.createElement("canvas");
+  const scale = 480 / canvas.height;
+  tempCanvas.width = Math.floor(canvas.width * scale);
+  tempCanvas.height = 480;
+  const tempCtx = tempCanvas.getContext("2d");
+  tempCtx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+  gifFrames.push(tempCanvas);
+}
+
+function downloadGIF() {
+  if (gifFrames.length === 0) {
+    alert("Không có dữ liệu ảnh động!");
+    return;
+  }
+  
+  const loading = document.getElementById("gifLoadingIndicator");
+  loading.style.display = "block";
+  document.getElementById("downloadGifBtn").disabled = true;
+
+  const gif = new GIF({
+    workers: 2,
+    quality: 10,
+    width: gifFrames[0].width,
+    height: gifFrames[0].height,
+    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+  });
+
+  gifFrames.forEach(frame => {
+    gif.addFrame(frame, {delay: 150});
+  });
+
+  gif.on('finished', function(blob) {
+    loading.style.display = "none";
+    document.getElementById("downloadGifBtn").disabled = false;
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `photobooth_boomerang_${new Date().getTime()}.gif`;
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+
+  gif.render();
 }
 
 // --- Photo Strip Print ---

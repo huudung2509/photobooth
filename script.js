@@ -32,12 +32,8 @@ function toggleCountdown() {
 
 const FILTERS = [
   { name: 'Mặc định', css: 'none', ar: 'none' },
-  { name: 'Mèo con', css: 'none', ar: 'cat' },
   { name: 'Hàn Quốc', css: 'sepia(10%) saturate(150%) hue-rotate(330deg)', ar: 'none' },
-  { name: 'Thug Life', css: 'contrast(120%)', ar: 'thug' },
-  { name: 'Kính Râm Đen', css: 'none', ar: 'sunglasses2' },
   { name: 'Mùa thu', css: 'sepia(40%) saturate(140%) hue-rotate(-10deg)', ar: 'none' },
-  { name: 'Vương miện', css: 'none', ar: 'crown' },
   { name: 'Tươi tắn', css: 'saturate(200%) contrast(110%)', ar: 'none' },
   { name: 'Đen trắng', css: 'grayscale(100%)', ar: 'none' }
 ];
@@ -1039,7 +1035,8 @@ window.addEventListener("load", () => {
       btn.onmouseout = () => btn.style.background = 'transparent';
       btn.onclick = () => {
         setFilter(index);
-        document.getElementById('filterDropdown').style.display = 'none';
+        dropdown.style.display = 'none';
+        setTimeout(() => dropdown.style.display = '', 100);
       };
       dropdown.appendChild(btn);
     });

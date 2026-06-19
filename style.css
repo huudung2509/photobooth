@@ -244,11 +244,19 @@ body {
   flex-direction: column;
   gap: 10px;
   min-width: 180px;
+  max-height: 400px;
+  overflow-y: auto;
   z-index: 120;
   opacity: 0;
   transform: translateY(-10px);
   transition: opacity 0.3s, transform 0.3s;
 }
+
+/* Custom scrollbar for dropdown menu */
+.dropdown-menu::-webkit-scrollbar { width: 6px; }
+.dropdown-menu::-webkit-scrollbar-track { background: transparent; }
+.dropdown-menu::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 4px; }
+.dropdown-menu::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
 
 .dropdown-container:hover .dropdown-menu {
   display: flex;

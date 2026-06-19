@@ -1134,7 +1134,8 @@ function drawARFilters(ctx, w, h) {
       const img = document.getElementById('sunglassesImg');
       if (img && img.complete && img.naturalWidth > 0) {
         const cx = (leftEye.x + rightEye.x) / 2;
-        const cy = (leftEye.y + rightEye.y) / 2;
+        // Dịch kính xuống một chút để không che lông mày
+        const cy = (leftEye.y + rightEye.y) / 2 + faceHeight * 0.04;
         
         const glassesWidth = faceWidth * 1.15;
         const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);
@@ -1148,7 +1149,8 @@ function drawARFilters(ctx, w, h) {
       const img = document.getElementById('sunglasses2Img');
       if (img && img.complete && img.naturalWidth > 0) {
         const cx = (leftEye.x + rightEye.x) / 2;
-        const cy = (leftEye.y + rightEye.y) / 2;
+        // Dịch kính xuống một chút để không che lông mày
+        const cy = (leftEye.y + rightEye.y) / 2 + faceHeight * 0.04;
         
         const glassesWidth = faceWidth * 1.15;
         const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);

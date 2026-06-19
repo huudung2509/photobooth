@@ -504,12 +504,16 @@ function showPhotoStrip() {
     stripCanvas.width = stripWidth;
     stripCanvas.height = stripHeight;
 
-    // Draw the custom frame as background
-    stripCtx.drawImage(customFrame, 0, 0);
+    const src = customFrame.src || customFrame.getAttribute('src') || '';
+    const isTransparentFrame = src.includes('frame4.png') || src.includes('frame5.png') || src.includes('frame6.png');
+
+    // Draw the custom frame as background if not transparent
+    if (!isTransparentFrame) {
+      stripCtx.drawImage(customFrame, 0, 0);
+    }
 
     let frameBoxes = state.frameBoxes;
     if (!frameBoxes || frameBoxes.length === 0) {
-      const src = customFrame.src || customFrame.getAttribute('src') || '';
       if (src.includes('frame2.jpg')) {
         frameBoxes = [
           {x: 73, y: 98, w: 216, h: 155},
@@ -524,6 +528,25 @@ function showPhotoStrip() {
           {x: 249, y: 318, w: 238, h: 155},
           {x: 249, y: 490, w: 238, h: 155},
           {x: 249, y: 662, w: 238, h: 155}
+        ];
+      } else if (src.includes('frame4.png')) {
+        frameBoxes = [
+          {x: 160, y: 241, w: 256, h: 212},
+          {x: 163, y: 461, w: 254, h: 212},
+          {x: 164, y: 680, w: 255, h: 212}
+        ];
+      } else if (src.includes('frame5.png')) {
+        frameBoxes = [
+          [{x: 66, y: 49, w: 269, h: 185}, {x: 426, y: 49, w: 269, h: 185}],
+          [{x: 66, y: 244, w: 269, h: 185}, {x: 426, y: 244, w: 269, h: 185}],
+          [{x: 66, y: 440, w: 269, h: 196}, {x: 426, y: 440, w: 269, h: 196}],
+          [{x: 66, y: 646, w: 269, h: 179}, {x: 426, y: 646, w: 269, h: 179}]
+        ];
+      } else if (src.includes('frame6.png')) {
+        frameBoxes = [
+          [{x: 94, y: 131, w: 235, h: 173}, {x: 405, y: 131, w: 234, h: 173}],
+          [{x: 94, y: 322, w: 235, h: 173}, {x: 405, y: 323, w: 234, h: 172}],
+          [{x: 94, y: 513, w: 235, h: 174}, {x: 405, y: 514, w: 234, h: 173}]
         ];
       } else {
         frameBoxes = [
@@ -542,27 +565,37 @@ function showPhotoStrip() {
       const img = new Image();
       img.onload = () => {
         if (index < frameBoxes.length) {
-          const box = frameBoxes[index];
+          const boxOrBoxes = frameBoxes[index];
+          const boxesToDraw = Array.isArray(boxOrBoxes) ? boxOrBoxes : [boxOrBoxes];
           
-          // Crop image proportionally to avoid squishing
-          const imgRatio = img.width / img.height;
-          const boxRatio = box.w / box.h;
-          let sWidth = img.width, sHeight = img.height, sx = 0, sy = 0;
-          
-          if (imgRatio > boxRatio) {
-            sWidth = img.height * boxRatio;
-            sx = (img.width - sWidth) / 2;
-          } else {
-            sHeight = img.width / boxRatio;
-            sy = (img.height - sHeight) / 2;
-          }
-          
-          stripCtx.globalCompositeOperation = 'multiply';
-          stripCtx.drawImage(img, sx, sy, sWidth, sHeight, box.x, box.y, box.w, box.h);
-          stripCtx.globalCompositeOperation = 'source-over';
+          boxesToDraw.forEach(box => {
+            // Crop image proportionally to avoid squishing
+            const imgRatio = img.width / img.height;
+            const boxRatio = box.w / box.h;
+            let sWidth = img.width, sHeight = img.height, sx = 0, sy = 0;
+            
+            if (imgRatio > boxRatio) {
+              sWidth = img.height * boxRatio;
+              sx = (img.width - sWidth) / 2;
+            } else {
+              sHeight = img.width / boxRatio;
+              sy = (img.height - sHeight) / 2;
+            }
+            
+            if (!isTransparentFrame) {
+              stripCtx.globalCompositeOperation = 'multiply';
+            }
+            stripCtx.drawImage(img, sx, sy, sWidth, sHeight, box.x, box.y, box.w, box.h);
+            if (!isTransparentFrame) {
+              stripCtx.globalCompositeOperation = 'source-over';
+            }
+          });
         }
         loaded++;
         if (loaded === target) {
+          if (isTransparentFrame) {
+            stripCtx.drawImage(customFrame, 0, 0);
+          }
           state.history.push(stripCanvas.toDataURL("image/png"));
         }
       };
@@ -579,8 +612,18 @@ function showPhotoStrip() {
       const y = (e.clientY - rect.top) * scaleY;
       
       for (let i = 0; i < frameBoxes.length; i++) {
-        const box = frameBoxes[i];
-        if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+        const boxOrBoxes = frameBoxes[i];
+        const boxesToCheck = Array.isArray(boxOrBoxes) ? boxOrBoxes : [boxOrBoxes];
+        
+        let clicked = false;
+        for (const box of boxesToCheck) {
+          if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
+            clicked = true;
+            break;
+          }
+        }
+        
+        if (clicked) {
           if (i < state.photos.length) {
             if (confirm(`Bạn có muốn chụp lại bức ảnh thứ ${i + 1} không?`)) {
               state.retakeIndex = i;
@@ -998,6 +1041,28 @@ function onFrameLoad() {
       {x: 249, y: 662, w: 238, h: 155}
     ];
     state.maxPhotos = 4;
+  } else if (src.includes('frame4.png')) {
+    state.frameBoxes = [
+      {x: 160, y: 241, w: 256, h: 212},
+      {x: 163, y: 461, w: 254, h: 212},
+      {x: 164, y: 680, w: 255, h: 212}
+    ];
+    state.maxPhotos = 3;
+  } else if (src.includes('frame5.png')) {
+    state.frameBoxes = [
+      [{x: 66, y: 49, w: 269, h: 185}, {x: 426, y: 49, w: 269, h: 185}],
+      [{x: 66, y: 244, w: 269, h: 185}, {x: 426, y: 244, w: 269, h: 185}],
+      [{x: 66, y: 440, w: 269, h: 196}, {x: 426, y: 440, w: 269, h: 196}],
+      [{x: 66, y: 646, w: 269, h: 179}, {x: 426, y: 646, w: 269, h: 179}]
+    ];
+    state.maxPhotos = 4;
+  } else if (src.includes('frame6.png')) {
+    state.frameBoxes = [
+      [{x: 94, y: 131, w: 235, h: 173}, {x: 405, y: 131, w: 234, h: 173}],
+      [{x: 94, y: 322, w: 235, h: 173}, {x: 405, y: 323, w: 234, h: 172}],
+      [{x: 94, y: 513, w: 235, h: 174}, {x: 405, y: 514, w: 234, h: 173}]
+    ];
+    state.maxPhotos = 3;
   } else {
     state.frameBoxes = analyzeFrame(img);
     if (state.frameBoxes.length > 0) {

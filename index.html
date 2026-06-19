@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photobooth của Jang💖</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Pacifico&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <video id="video" playsinline></video>
+  <div id="container">
+    <canvas id="mainCanvas"></canvas>
+  </div>
+
+  <!-- Restored Instructions Panel -->
+  <div id="instructionsPanel">
+    <h3>✨ Photobooth của Jang💖</h3>
+    <div id="tips">
+      <p>🖐️ Giơ 1 tay (Hi) → Chụp toàn màn hình (3s)</p>
+      <p>🙌 Giơ 2 tay "L" → Tạo khung ảnh</p>
+      <p>👆 Gập ngón trỏ → Chụp trong khung</p>
+    </div>
+  </div>
+
+  <div id="countdownText"
+    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 150px; color: white; text-shadow: 0 0 30px #ff66cc, 0 0 10px #ff66cc; font-weight: 900; z-index: 100; font-family: 'Nunito', sans-serif;">
+    3</div>
+
+  <div id="statusText">Initializing...</div>
+  <div id="photoCount" style="display: none">📸 0/4</div>
+
+  <div id="sidebar"></div>
+  <!-- Using local frame images -->
+  <div id="frameSelector" style="position: fixed; top: 20px; right: 150px; z-index: 110; display: flex; gap: 10px;">
+    <button onclick="openGallery()" style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #9966ff; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      📸 Thư viện
+    </button>
+    <button id="countdownBtn" onclick="toggleCountdown()" style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff6666; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      ⏱️ 3s
+    </button>
+    <button onclick="toggleFilter()" style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff9933; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+      ✨ Đổi Filter
+    </button>
+    <div style="position: relative; display: inline-block;" onmouseenter="document.getElementById('frameDropdown').style.display='flex'" onmouseleave="document.getElementById('frameDropdown').style.display='none'">
+      <button style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff66cc; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px;">
+        🖼️ Chọn khung ▾
+      </button>
+      <div id="frameDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; background: rgba(255,255,255,0.9); padding: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+        <img src="frame.jpg" class="frame-thumb" onclick="selectFrame('frame.jpg', this); document.getElementById('frameDropdown').style.display='none';"
+          style="width: 60px; height: auto; cursor: pointer; border: 3px solid #ff66cc; border-radius: 5px; transition: transform 0.2s;">
+        <img src="frame2.jpg" class="frame-thumb" onclick="selectFrame('frame2.jpg', this); document.getElementById('frameDropdown').style.display='none';"
+          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s;">
+        <img src="frame3.jpg" class="frame-thumb" onclick="selectFrame('frame3.jpg', this); document.getElementById('frameDropdown').style.display='none';"
+          style="width: 60px; height: auto; cursor: pointer; border: 3px solid transparent; border-radius: 5px; transition: transform 0.2s;">
+      </div>
+    </div>
+  </div>
+  <img id="customFrame" src="frame.jpg" style="display:none;" onload="onFrameLoad()" crossorigin="anonymous" />
+
+  <div id="photoStripModal">
+    <div id="photoStripContainer">
+      <canvas id="photoStripCanvas"></canvas>
+    </div>
+    <div id="stripButtonGroup">
+      <button class="strip-btn download" onclick="downloadPhotoStrip()">
+        📥 Tải xuống
+      </button>
+      <button class="strip-btn reset" onclick="resetPhotobooth()">
+        🔄 Làm lại
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="script.js"></script>
+
+  <!-- Gallery Modal -->
+  <div id="galleryModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 200; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: white; padding: 20px; border-radius: 20px; width: 80%; height: 80%; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+        <h2 style="font-family: 'Nunito', sans-serif; color: #ff66cc; margin: 0;">📸 Thư viện ảnh của bạn</h2>
+        <button onclick="closeGallery()" style="background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">✖</button>
+      </div>
+      <div id="galleryContainer" style="flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 10px;">
+        <!-- Images will be injected here -->
+      </div>
+    </div>
+  </div>
+</body>
+</html>

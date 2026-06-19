@@ -15,6 +15,7 @@ const state = {
   frameBoxes: [],
   maxPhotos: 4,
   currentCountdownIndex: 0,
+  currentFilterIndex: 0,
   history: [],
   faces: [],
   currentARFilterIndex: 'none'

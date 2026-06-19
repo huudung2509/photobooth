@@ -1083,7 +1083,13 @@ function drawARFilters(ctx, w, h) {
     const faceWidth = Math.hypot(rightCheek.x - leftCheek.x, rightCheek.y - leftCheek.y);
     const faceHeight = Math.hypot(bottomChin.x - topHead.x, bottomChin.y - topHead.y);
 
-    const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+    const eye1 = getPos(159);
+    const eye2 = getPos(386);
+    const screenLeftEye = eye1.x < eye2.x ? eye1 : eye2;
+    const screenRightEye = eye1.x < eye2.x ? eye2 : eye1;
+
+    // Use screen-left and screen-right to calculate angle so it's never upside down
+    const angle = Math.atan2(screenRightEye.y - screenLeftEye.y, screenRightEye.x - screenLeftEye.x);
 
     ctx.save();
     

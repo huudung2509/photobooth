@@ -1099,6 +1099,27 @@ function onFrameLoad() {
       [{x: 94, y: 513, w: 235, h: 174}, {x: 405, y: 514, w: 234, h: 173}]
     ];
     state.maxPhotos = 3;
+  } else if (src.includes('frame7.png')) {
+    state.frameBoxes = [
+      [{x: 27, y: 32, w: 286, h: 213}, {x: 337, y: 32, w: 286, h: 213}],
+      [{x: 27, y: 259, w: 286, h: 214}, {x: 337, y: 259, w: 286, h: 214}],
+      [{x: 27, y: 486, w: 286, h: 215}, {x: 337, y: 486, w: 286, h: 215}]
+    ];
+    state.maxPhotos = 3;
+  } else if (src.includes('frame8.png')) {
+    state.frameBoxes = [
+      {x: 160, y: 241, w: 259, h: 212},
+      {x: 162, y: 461, w: 258, h: 212},
+      {x: 163, y: 679, w: 258, h: 213}
+    ];
+    state.maxPhotos = 3;
+  } else if (src.includes('frame9.png')) {
+    state.frameBoxes = [
+      {x: 148, y: 56, w: 281, h: 214},
+      {x: 151, y: 289, w: 279, h: 215},
+      {x: 153, y: 523, w: 280, h: 215}
+    ];
+    state.maxPhotos = 3;
   } else {
     state.frameBoxes = analyzeFrame(img);
     if (state.frameBoxes.length > 0) {

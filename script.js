@@ -1135,8 +1135,8 @@ function drawARFilters(ctx, w, h) {
         const cx = (leftEye.x + rightEye.x) / 2;
         const cy = (leftEye.y + rightEye.y) / 2;
         
-        const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
-        const glassesWidth = eyeDist * 2.5;
+        // Use face width instead of eye distance to make glasses realistically large
+        const glassesWidth = faceWidth * 1.15;
         const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);
         
         ctx.translate(cx, cy);

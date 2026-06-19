@@ -859,18 +859,22 @@ async function init() {
           if (faceMesh) await faceMesh.send({ image: video });
         }
       },
-      width: 1920,
-      height: 1080,
+      width: 1280,
+      height: 720,
     });
 
-    camera.start();
+    await camera.start();
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
     state.isInitialized = true;
     updateStatus();
     draw();
   } catch (error) {
-    document.getElementById("statusText").textContent = "❌ Lỗi camera. Vui lòng cho phép truy cập!";
+    console.error("Camera error:", error);
+    const statusEl = document.getElementById("statusText");
+    if (statusEl) {
+      statusEl.style.display = "block";
+      statusEl.textContent = "❌ Lỗi camera: " + error.message;
+    }
   }
 }
 

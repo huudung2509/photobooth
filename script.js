@@ -14,9 +14,10 @@ const state = {
   countdownInterval: null,
   frameBoxes: [],
   maxPhotos: 4,
-  currentFilterIndex: 0,
   currentCountdownIndex: 0,
-  history: []
+  history: [],
+  faces: [],
+  currentARFilterIndex: 'none'
 };
 
 const COUNTDOWNS = [3, 5, 7, 10];
@@ -28,22 +29,28 @@ function toggleCountdown() {
 }
 
 const FILTERS = [
-  { name: 'Mặc định', value: 'none' },
-  { name: 'Đen trắng', value: 'grayscale(100%)' },
-  { name: 'Cổ điển', value: 'sepia(80%)' },
-  { name: 'Hàn Quốc', value: 'sepia(10%) saturate(150%) hue-rotate(330deg)' },
-  { name: 'Mùa thu', value: 'sepia(40%) saturate(140%) hue-rotate(-10deg)' },
-  { name: 'Tươi tắn', value: 'saturate(200%) contrast(110%)' }
+  { name: 'Mặc định', css: 'none', ar: 'none' },
+  { name: 'Mèo con', css: 'none', ar: 'cat' },
+  { name: 'Hàn Quốc', css: 'sepia(10%) saturate(150%) hue-rotate(330deg)', ar: 'none' },
+  { name: 'Thug Life', css: 'contrast(120%)', ar: 'thug' },
+  { name: 'Mùa thu', css: 'sepia(40%) saturate(140%) hue-rotate(-10deg)', ar: 'none' },
+  { name: 'Vương miện', css: 'none', ar: 'crown' },
+  { name: 'Tươi tắn', css: 'saturate(200%) contrast(110%)', ar: 'none' },
+  { name: 'Đen trắng', css: 'grayscale(100%)', ar: 'none' }
 ];
 
 function toggleFilter() {
   state.currentFilterIndex = (state.currentFilterIndex + 1) % FILTERS.length;
   const filter = FILTERS[state.currentFilterIndex];
-  document.getElementById('video').style.filter = filter.value;
+  document.getElementById('video').style.filter = filter.css;
+  state.currentARFilterIndex = filter.ar;
   
-  const status = document.getElementById('status');
-  status.innerText = `✨ Filter: ${filter.name}`;
-  status.style.background = "rgba(255, 150, 50, 0.9)";
+  const status = document.getElementById('statusText');
+  if (status) {
+    status.style.display = "block";
+    status.innerText = `✨ Filter: ${filter.name}`;
+    status.style.background = "rgba(255, 150, 50, 0.9)";
+  }
   setTimeout(() => updateStatus(), 2000);
 }
 
@@ -110,6 +117,23 @@ hands.setOptions({
 });
 
 hands.onResults(onHandsResults);
+
+// ===== MEDIAPIPE FACEMESH SETUP =====
+const faceMesh = new FaceMesh({
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+});
+
+faceMesh.setOptions({
+  maxNumFaces: 2,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+
+faceMesh.onResults((results) => {
+  state.faces = results.multiFaceLandmarks || [];
+});
 
 let camera;
 
@@ -198,7 +222,9 @@ function updateHandTracking() {
   const handState1 = getHandState(hand1M);
   const handState2 = hand2M ? getHandState(hand2M) : "none";
 
-  if (hand2M) {
+  const isMobile = window.innerWidth <= 768;
+
+  if (hand2M && !isMobile) {
     // Check for L-shape frame (thumbs and index fingers)
     const thumb1 = hand1M[4];
     const index1 = hand1M[8];
@@ -304,14 +330,18 @@ function captureFullScreenPhoto() {
   tempCanvas.height = pixelHeight;
   const tempCtx = tempCanvas.getContext("2d");
 
+  tempCtx.save();
   tempCtx.translate(pixelWidth, 0);
   tempCtx.scale(-1, 1);
   
-  if (FILTERS[state.currentFilterIndex].value !== 'none') {
-    tempCtx.filter = FILTERS[state.currentFilterIndex].value;
+  if (FILTERS[state.currentFilterIndex].css !== 'none') {
+    tempCtx.filter = FILTERS[state.currentFilterIndex].css;
   }
   
   tempCtx.drawImage(video, 0, 0, pixelWidth, pixelHeight);
+  tempCtx.restore();
+
+  drawARFilters(tempCtx, pixelWidth, pixelHeight);
 
   const photoData = tempCanvas.toDataURL("image/png");
   state.photos.push(photoData);
@@ -332,26 +362,36 @@ function capturePhoto() {
   if (state.photoCount >= state.maxPhotos || !state.frameBox) return;
 
   const frameBox = state.frameBox;
-  const unmirroredX = Math.max(0, 1 - (frameBox.x + frameBox.width));
-  
-  const pixelX = unmirroredX * video.videoWidth;
-  const pixelY = frameBox.y * video.videoHeight;
   const pixelWidth = frameBox.width * video.videoWidth;
   const pixelHeight = frameBox.height * video.videoHeight;
 
+  // Draw full screen photo first
+  const fullCanvas = document.createElement("canvas");
+  fullCanvas.width = video.videoWidth;
+  fullCanvas.height = video.videoHeight;
+  const fullCtx = fullCanvas.getContext("2d");
+
+  fullCtx.save();
+  fullCtx.translate(video.videoWidth, 0);
+  fullCtx.scale(-1, 1);
+  if (FILTERS[state.currentFilterIndex].css !== 'none') {
+    fullCtx.filter = FILTERS[state.currentFilterIndex].css;
+  }
+  fullCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+  fullCtx.restore();
+
+  drawARFilters(fullCtx, video.videoWidth, video.videoHeight);
+
+  // Crop to tempCanvas
   const tempCanvas = document.createElement("canvas");
   tempCanvas.width = pixelWidth;
   tempCanvas.height = pixelHeight;
   const tempCtx = tempCanvas.getContext("2d");
 
-  tempCtx.translate(pixelWidth, 0);
-  tempCtx.scale(-1, 1);
+  const screenX = frameBox.x * video.videoWidth;
+  const screenY = frameBox.y * video.videoHeight;
   
-  if (FILTERS[state.currentFilterIndex].value !== 'none') {
-    tempCtx.filter = FILTERS[state.currentFilterIndex].value;
-  }
-  
-  tempCtx.drawImage(video, pixelX, pixelY, pixelWidth, pixelHeight, 0, 0, pixelWidth, pixelHeight);
+  tempCtx.drawImage(fullCanvas, screenX, screenY, pixelWidth, pixelHeight, 0, 0, pixelWidth, pixelHeight);
 
   const photoData = tempCanvas.toDataURL("image/png");
   state.photos.push(photoData);
@@ -405,15 +445,24 @@ function updateStatus() {
   const countEl = document.getElementById("photoCount");
   countEl.style.display = "block";
   countEl.textContent = `📸 ${state.photoCount}/${state.maxPhotos}`;
+  statusEl.style.background = "rgba(255, 100, 200, 0.9)";
 
   if (state.photoCount === state.maxPhotos) {
+    statusEl.style.display = "block";
     statusEl.textContent = "✨ Đã hoàn thành!";
   } else if (state.countdownInterval) {
+    statusEl.style.display = "block";
     statusEl.textContent = "📸 Chuẩn bị cười lên nào!";
   } else if (state.frameActive) {
+    statusEl.style.display = "block";
     statusEl.textContent = "👆 Gập ngón trỏ để chụp khung";
   } else {
-    statusEl.textContent = "🖐️ Giơ 'Hi' chụp full | 🔲 2 tay 'L' tạo khung";
+    if (window.innerWidth <= 768) {
+      statusEl.style.display = "none";
+    } else {
+      statusEl.style.display = "block";
+      statusEl.textContent = "🖐️ Giơ 'Hi' chụp full | 🔲 2 tay 'L' tạo khung";
+    }
   }
 }
 
@@ -468,8 +517,22 @@ function showPhotoStrip() {
       img.onload = () => {
         if (index < frameBoxes.length) {
           const box = frameBoxes[index];
+          
+          // Crop image proportionally to avoid squishing
+          const imgRatio = img.width / img.height;
+          const boxRatio = box.w / box.h;
+          let sWidth = img.width, sHeight = img.height, sx = 0, sy = 0;
+          
+          if (imgRatio > boxRatio) {
+            sWidth = img.height * boxRatio;
+            sx = (img.width - sWidth) / 2;
+          } else {
+            sHeight = img.width / boxRatio;
+            sy = (img.height - sHeight) / 2;
+          }
+          
           stripCtx.globalCompositeOperation = 'multiply';
-          stripCtx.drawImage(img, box.x, box.y, box.w, box.h);
+          stripCtx.drawImage(img, sx, sy, sWidth, sHeight, box.x, box.y, box.w, box.h);
           stripCtx.globalCompositeOperation = 'source-over';
         }
         loaded++;
@@ -659,14 +722,16 @@ function draw() {
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   
-  if (FILTERS[state.currentFilterIndex].value !== 'none') {
-    ctx.filter = FILTERS[state.currentFilterIndex].value;
+  if (FILTERS[state.currentFilterIndex].css !== 'none') {
+    ctx.filter = FILTERS[state.currentFilterIndex].css;
   }
   
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   ctx.filter = 'none';
   ctx.restore();
+
+  drawARFilters(ctx, canvas.width, canvas.height);
 
   const vignetteGradient = ctx.createRadialGradient(
     canvas.width / 2, canvas.height / 2, 0,
@@ -789,19 +854,20 @@ async function init() {
 
     camera = new Camera(video, {
       onFrame: async () => {
-        if (hands && video.readyState === video.HAVE_ENOUGH_DATA) {
-          await hands.send({ image: video });
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+          if (hands) await hands.send({ image: video });
+          if (faceMesh) await faceMesh.send({ image: video });
         }
       },
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
     });
 
     camera.start();
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     state.isInitialized = true;
-    document.getElementById("statusText").textContent = "✨ Sẵn sàng!";
+    updateStatus();
     draw();
   } catch (error) {
     document.getElementById("statusText").textContent = "❌ Lỗi camera. Vui lòng cho phép truy cập!";
@@ -955,5 +1021,89 @@ function analyzeFrame(img) {
   });
   
   return boxes;
+}
+
+function drawARFilters(ctx, w, h) {
+  if (!state.faces || state.faces.length === 0 || state.currentARFilterIndex === 'none') return;
+
+  state.faces.forEach((face) => {
+    const getPos = (idx) => ({ x: (1 - face[idx].x) * w, y: face[idx].y * h });
+    
+    const nose = getPos(1);
+    const leftEye = getPos(159);
+    const rightEye = getPos(386);
+    const leftCheek = getPos(234);
+    const rightCheek = getPos(454);
+    const topHead = getPos(10);
+    const bottomChin = getPos(152);
+
+    const faceWidth = Math.hypot(rightCheek.x - leftCheek.x, rightCheek.y - leftCheek.y);
+    const faceHeight = Math.hypot(bottomChin.x - topHead.x, bottomChin.y - topHead.y);
+
+    const angle = Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x);
+
+    ctx.save();
+    
+    if (state.currentARFilterIndex === 'cat') {
+      const earSize = faceWidth * 0.4;
+      ctx.fillStyle = "#ffb3cc";
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      
+      const drawEar = (x, y, rot) => {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle + rot);
+        ctx.beginPath();
+        ctx.moveTo(-earSize/2, 0);
+        ctx.lineTo(0, -earSize);
+        ctx.lineTo(earSize/2, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      };
+      drawEar(leftEye.x - earSize/2, topHead.y, -0.3);
+      drawEar(rightEye.x + earSize/2, topHead.y, 0.3);
+      
+      ctx.font = `${faceWidth * 0.3}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🐱", nose.x, nose.y);
+      
+      ctx.strokeStyle = "rgba(0,0,0,0.5)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(nose.x - 20, nose.y); ctx.lineTo(leftCheek.x, nose.y - 10);
+      ctx.moveTo(nose.x - 20, nose.y+10); ctx.lineTo(leftCheek.x, nose.y + 10);
+      ctx.moveTo(nose.x + 20, nose.y); ctx.lineTo(rightCheek.x, nose.y - 10);
+      ctx.moveTo(nose.x + 20, nose.y+10); ctx.lineTo(rightCheek.x, nose.y + 10);
+      ctx.stroke();
+    } 
+    else if (state.currentARFilterIndex === 'thug') {
+      const glassesWidth = faceWidth * 1.2;
+      ctx.translate(nose.x, leftEye.y);
+      ctx.rotate(angle);
+      ctx.font = `${glassesWidth}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🕶️", 0, 0);
+    }
+    else if (state.currentARFilterIndex === 'crown') {
+      const crownSize = faceWidth * 0.8;
+      ctx.translate(topHead.x, topHead.y - crownSize/3);
+      ctx.rotate(angle);
+      ctx.font = `${crownSize}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("👑", 0, 0);
+      
+      ctx.fillStyle = "rgba(255, 100, 150, 0.4)";
+      ctx.beginPath(); ctx.arc(leftCheek.x, leftCheek.y, faceWidth * 0.15, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rightCheek.x, rightCheek.y, faceWidth * 0.15, 0, Math.PI*2); ctx.fill();
+    }
+    
+    ctx.restore();
+  });
 }
 

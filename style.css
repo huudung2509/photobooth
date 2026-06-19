@@ -68,8 +68,15 @@ body {
 }
 
 @keyframes slideIn {
-  from { transform: translateX(150px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(150px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* UI Text & Instructions */
@@ -103,7 +110,10 @@ body {
   border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
   padding-bottom: 8px;
 }
-#tips p:last-child { border-bottom: none; }
+
+#tips p:last-child {
+  border-bottom: none;
+}
 
 #statusText {
   position: fixed;
@@ -156,8 +166,13 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 #photoStripContainer {
@@ -166,13 +181,20 @@ body {
   max-width: 90vw;
   overflow: auto;
   animation: zoomIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
 }
 
 @keyframes zoomIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 #photoStripCanvas {
@@ -234,8 +256,13 @@ body {
 }
 
 @keyframes flash {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 /* Emoji popup */
@@ -248,8 +275,15 @@ body {
 }
 
 @keyframes emojiFloat {
-  0% { transform: scale(0) translateY(0); opacity: 1; }
-  100% { transform: scale(0) translateY(-100px); opacity: 0; }
+  0% {
+    transform: scale(0) translateY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0) translateY(-100px);
+    opacity: 0;
+  }
 }
 
 /* Loading indicator */
@@ -266,6 +300,123 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Top Controls */
+.top-controls {
+  position: fixed;
+  top: 20px;
+  right: 150px;
+  z-index: 110;
+  display: flex;
+  gap: 10px;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  font-family: 'Nunito', sans-serif;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: transform 0.2s;
+}
+
+.control-btn:hover {
+  transform: scale(1.05);
+}
+
+.frame-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 120;
+}
+
+.desktop-tips { display: block; }
+.mobile-tips { display: none; }
+
+@media (max-width: 768px) {
+  #sidebar {
+    display: none;
+  }
+
+  .top-controls {
+    top: 10px;
+    right: 5px;
+    left: 5px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .control-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  #instructionsPanel {
+    top: auto;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    padding: 5px 15px;
+    background: rgba(20, 0, 40, 0.5);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 20px;
+  }
+
+  #instructionsPanel h3 {
+    display: none;
+  }
+
+  .desktop-tips { display: none !important; }
+  .mobile-tips { display: block !important; }
+
+  #instructionsPanel p {
+    font-size: 12px;
+    margin: 0;
+    white-space: nowrap;
+    border-bottom: none !important;
+  }
+
+  #countdownText {
+    font-size: 80px !important;
+  }
+
+  #statusText, #photoCount {
+    bottom: 45px;
+    padding: 10px 20px;
+    font-size: 14px;
+    min-width: auto;
+  }
+  
+  #photoCount {
+    right: 10px;
+  }
 }

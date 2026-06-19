@@ -46,11 +46,18 @@
       onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
       ⏱️ 3s
     </button>
-    <button onclick="toggleFilter()"
-      style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff9933; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;"
-      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-      ✨ Đổi Filter
-    </button>
+    <div style="position: relative; display: inline-block;"
+      onmouseenter="document.getElementById('filterDropdown').style.display='flex'"
+      onmouseleave="document.getElementById('filterDropdown').style.display='none'">
+      <button
+        style="background: rgba(255,255,255,0.9); padding: 10px 20px; border: none; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: bold; color: #ff9933; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: transform 0.2s;">
+        ✨ Đổi Filter ▾
+      </button>
+      <div id="filterDropdown"
+        style="display: none; position: absolute; right: 0; top: 100%; margin-top: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); flex-direction: column; gap: 5px; min-width: 150px; z-index: 100;">
+        <!-- Filters will be loaded here via JS -->
+      </div>
+    </div>
     <div style="position: relative; display: inline-block;"
       onmouseenter="document.getElementById('frameDropdown').style.display='flex'"
       onmouseleave="document.getElementById('frameDropdown').style.display='none'">

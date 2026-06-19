@@ -43,7 +43,20 @@ const FILTERS = [
 function toggleFilter() {
   state.currentFilterIndex = (state.currentFilterIndex + 1) % FILTERS.length;
   const filter = FILTERS[state.currentFilterIndex];
-  document.getElementById('video').style.filter = filter.css;
+  state.currentARFilterIndex = filter.ar;
+  
+  const status = document.getElementById('statusText');
+  if (status) {
+    status.style.display = "block";
+    status.innerText = `✨ Filter: ${filter.name}`;
+    status.style.background = "rgba(255, 150, 50, 0.9)";
+  }
+  setTimeout(() => updateStatus(), 2000);
+}
+
+function setFilter(index) {
+  state.currentFilterIndex = index;
+  const filter = FILTERS[state.currentFilterIndex];
   state.currentARFilterIndex = filter.ar;
   
   const status = document.getElementById('statusText');
@@ -879,7 +892,32 @@ async function init() {
   }
 }
 
-window.addEventListener("load", () => setTimeout(init, 500));
+window.addEventListener("load", () => {
+  const dropdown = document.getElementById('filterDropdown');
+  if (dropdown) {
+    FILTERS.forEach((filter, index) => {
+      const btn = document.createElement('button');
+      btn.innerText = filter.name;
+      btn.style.padding = '8px 15px';
+      btn.style.border = 'none';
+      btn.style.background = 'transparent';
+      btn.style.cursor = 'pointer';
+      btn.style.fontFamily = "'Nunito', sans-serif";
+      btn.style.fontWeight = 'bold';
+      btn.style.color = '#ff9933';
+      btn.style.textAlign = 'left';
+      btn.style.borderRadius = '10px';
+      btn.onmouseover = () => btn.style.background = 'rgba(255, 153, 51, 0.1)';
+      btn.onmouseout = () => btn.style.background = 'transparent';
+      btn.onclick = () => {
+        setFilter(index);
+        document.getElementById('filterDropdown').style.display = 'none';
+      };
+      dropdown.appendChild(btn);
+    });
+  }
+  setTimeout(init, 500);
+});
 
 // --- Frame Analysis & Selection ---
 function selectFrame(src, element) {

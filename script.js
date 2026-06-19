@@ -793,7 +793,7 @@ function downloadGIF() {
     quality: 20,
     width: gifFrames[0].width,
     height: gifFrames[0].height,
-    workerScript: 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js'
+    workerScript: 'gif.worker.js'
   });
 
   gifFrames.forEach(frame => {

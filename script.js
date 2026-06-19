@@ -34,6 +34,7 @@ const FILTERS = [
   { name: 'Mèo con', css: 'none', ar: 'cat' },
   { name: 'Hàn Quốc', css: 'sepia(10%) saturate(150%) hue-rotate(330deg)', ar: 'none' },
   { name: 'Thug Life', css: 'contrast(120%)', ar: 'thug' },
+  { name: 'Kính Râm Đen', css: 'none', ar: 'sunglasses2' },
   { name: 'Mùa thu', css: 'sepia(40%) saturate(140%) hue-rotate(-10deg)', ar: 'none' },
   { name: 'Vương miện', css: 'none', ar: 'crown' },
   { name: 'Tươi tắn', css: 'saturate(200%) contrast(110%)', ar: 'none' },
@@ -1135,7 +1136,20 @@ function drawARFilters(ctx, w, h) {
         const cx = (leftEye.x + rightEye.x) / 2;
         const cy = (leftEye.y + rightEye.y) / 2;
         
-        // Use face width instead of eye distance to make glasses realistically large
+        const glassesWidth = faceWidth * 1.15;
+        const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);
+        
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.drawImage(img, -glassesWidth / 2, -glassesHeight / 2, glassesWidth, glassesHeight);
+      }
+    }
+    else if (state.currentARFilterIndex === 'sunglasses2') {
+      const img = document.getElementById('sunglasses2Img');
+      if (img && img.complete && img.naturalWidth > 0) {
+        const cx = (leftEye.x + rightEye.x) / 2;
+        const cy = (leftEye.y + rightEye.y) / 2;
+        
         const glassesWidth = faceWidth * 1.15;
         const glassesHeight = glassesWidth * (img.naturalHeight / img.naturalWidth);
         

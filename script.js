@@ -19,7 +19,8 @@ const state = {
   history: [],
   faces: [],
   currentARFilterIndex: 'none',
-  retakeIndex: null
+  retakeIndex: null,
+  lastCaptureType: "full"
 };
 
 let mediaRecorder = null;
@@ -307,6 +308,8 @@ function calculateFrameBoundingBox(thumb1, index1, thumb2, index2) {
 function startCountdown(captureType = "full") {
   if (state.countdownInterval) return;
   
+  state.lastCaptureType = captureType;
+  
   if (state.photoCount === 0 && state.retakeIndex === null) {
     // Bắt đầu quay video
     recordedChunks = [];
@@ -459,8 +462,11 @@ function savePhoto(photoData) {
     setTimeout(() => {
       if (state.photoCount === state.maxPhotos) {
         setTimeout(showPhotoStrip, 1000);
+      } else {
+        // Automatically start the next countdown
+        startCountdown(state.lastCaptureType || "full");
       }
-    }, 1000);
+    }, 1500); // 1.5 seconds delay between photos
   }
 }
 

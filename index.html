@@ -67,6 +67,11 @@
         <img src="frame9.png" class="frame-thumb" onclick="selectFrame('frame9.png', this)">
       </div>
     </div>
+    
+    <!-- Auto Capture Button -->
+    <button id="autoCaptureBtn" onclick="startCountdown('full')" style="position: absolute; bottom: -80px; left: 50%; transform: translateX(-50%); width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); border: 4px solid white; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.2s; display: flex; justify-content: center; align-items: center; z-index: 100;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: white; transition: all 0.2s;"></div>
+    </button>
   </div>
 
   <img id="customFrame" src="frame.jpg" style="display:none;" onload="onFrameLoad()" crossorigin="anonymous" />
